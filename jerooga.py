@@ -1,7 +1,7 @@
 import pygame
 
 # Texture dictionary
-type2Texture = {"water": pygame.image.load("Textures/Water.gif")}
+type2Texture = {"water": pygame.image.load("Textures/Water.gif"), "land": pygame.image.load("Textures/Land.gif"), "net": pygame.image.load("Textures/Net.gif")}
 
 class Jerooga:
     def __init__(self, screenWidth=644, screenHeight=644):
@@ -21,11 +21,15 @@ class Jerooga:
         pygame.init()
         self.window = pygame.display.set_mode(self.screenSize)
 
-#
+# Tile class to be stored in the board 2d list, it should represent each type of block
 class Tile:
-    def __init__(self, type = "water"):
-        self.type = type
+    def __init__(self, state = "water"):
+        self.state = state
 
+    # Returns pygame texture
     def getTexture(self):
-        return type2Texture[self.type]
-
+        return type2Texture[self.state]
+    
+class Jeroo(Tile):
+    # TODO: Write this class
+    pass
