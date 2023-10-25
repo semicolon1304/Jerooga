@@ -1,5 +1,4 @@
 import pygame
-from Tile import Tile
 
 class Jerooga:
     def __init__(self, screenWidth=644, screenHeight=644):
