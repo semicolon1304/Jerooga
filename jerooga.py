@@ -1,7 +1,16 @@
 import pygame
 
 # Texture dictionary
-type2Texture = {"water": pygame.image.load("Textures/Water.gif"), "land": pygame.image.load("Textures/Land.gif"), "net": pygame.image.load("Textures/Net.gif")}
+type2Texture = {
+    "collision": pygame.image.load("Textures/Collision.gif"),
+    "flower": pygame.image.load("Textures/Flower.gif"),
+    "trapped": pygame.image.load("Textures/Trapped.gif"),
+    "wet": pygame.image.load("Textures/Wet.gif"),
+    "collision": pygame.image.load("Textures/Collision.gif"),
+    "water": pygame.image.load("Textures/Water.gif"),
+    "land": pygame.image.load("Textures/Land.gif"),
+    "net": pygame.image.load("Textures/Net.gif")
+    }
 
 class Jerooga:
     def __init__(self, screenWidth=644, screenHeight=644):
