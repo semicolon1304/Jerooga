@@ -2,7 +2,8 @@ import pygame
 from time import sleep
 
 class Jerooga:
-    def __init__(self, screenWidth=644, screenHeight=644):
+    def __init__(self, secondsBetweenActions = 1, file:str="None", screenWidth:int=644, screenHeight:int=644):
+        self.secondsBetweenActions = secondsBetweenActions
         self.pixelsPerBlock = 28
         # each block is self.pixelsPerBlock x self.pixelsPerBlock
         self.screenWidth = screenWidth
@@ -11,8 +12,18 @@ class Jerooga:
         self.blocksWide = screenWidth // self.pixelsPerBlock
         self.blocksHigh = screenHeight // self.pixelsPerBlock
 
+        if file != "None":
+            f = open(file)
+            line = f.read()
+            state = # Determine state from string
+            self.board = [[Tile(x,y, state=state) for x in range(self.blocksWide)]]
+            f.close()
+
+            
+            
         # Board is the play area, it is a 2d list, screenWidth//pixelsPerBlock x screenHeight//pixelsPerBlock
-        self.board = [[Tile(x,y) for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
+        else:
+            self.board = [[Tile(x,y) for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
 
         # Jeroos should be stored in a list for easy iteration in loops
         self.jeroos = []
@@ -37,11 +48,26 @@ class Jerooga:
         
         # Draws Jeroos
         for jerooIter in self.jeroos:
-            jerooIter.draw(self.window, self.pixelsPerBlock, self.board)
+            jerooIter.draw(self.window, self.pixelsPerBlock)
 
         pygame.display.flip()
+        
+        for event in pygame.event.get():
+            match event:
 
-        sleep(1)
+                case pygame.QUIT:
+                    pygame.quit()
+
+        sleep(self.secondsBetweenActions)
+
+    def allDone(self):
+        # loop that checks for events and closes window, esc key should work too
+        for event in pygame.event.get():
+            match event:
+
+                case pygame.QUIT:
+                    pygame.quit()
+    
 
 
 
@@ -86,11 +112,11 @@ class Jeroo(Tile):
         self.direction = direction
         self.parentJerooga = parentJerooga
     
-    def draw(self, window, pixelsPerBlock, board):
-        window.blit(self.getTexture(board), (self.blockX*pixelsPerBlock, self.blockY*pixelsPerBlock))
+    def draw(self, window, pixelsPerBlock):
+        window.blit(self.getTexture(), (self.blockX*pixelsPerBlock, self.blockY*pixelsPerBlock))
 
-    def getTexture(self, board):
-        if self.isOnFlower(board):
+    def getTexture(self):
+        if self.isOnFlower():
             return type2Texture[f"{self.number}{self.direction}_F"]
         return type2Texture[f"{self.number}{self.direction}"]
             
@@ -108,13 +134,18 @@ class Jeroo(Tile):
         self.parentJerooga.updateWindow()
         
     # Picks up the flower on the current position and places it in inventory
-    def pick():
-        pass
+    def pick(self):
+        self.parentJerooga.board[self.blockY][self.blockX] == "land"
+
+        self.flowers += 1
+        
 
 
     # Places flower at current position
-    def plant(self, window):
-        pass
+    def plant(self):
+        self.parentJerooga.board[self.blockY][self.blockX] == "flower"
+        
+        self.flowers -= 1
     
 
     # Places a flower one block in the direction that the jeroo is facing
@@ -125,7 +156,7 @@ class Jeroo(Tile):
         pass
 
     def turn(direction):
-        pass  
+        pass
 
     # Boolean Methods (not by zack "BooleanMaster" McKenzie)
     
@@ -135,8 +166,8 @@ class Jeroo(Tile):
     def isFacing(self, direction):
         return True if self.direction == direction else False
     
-    def isOnFlower(self, board):
-        return board[self.blockY][self.blockX].getState() == "flower"
+    def isOnFlower(self):
+        return self.parentJerooga.board[self.blockY][self.blockX].getState() == "flower"
 
 
 
