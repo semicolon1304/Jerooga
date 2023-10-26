@@ -11,7 +11,7 @@ class Jerooga:
         self.blocksHigh = screenHeight // self.pixelsPerBlock
 
         # Board is the play area, it is a 2d list, screenWidth//pixelsPerBlock x screenHeight//pixelsPerBlock
-        self.board = [[Tile() for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
+        self.board = [[Tile(x,y) for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
 
         # Jeroos should be stored in a list for easy iteration in loops
         self.jeroos = []
@@ -19,7 +19,7 @@ class Jerooga:
         # Pygame will initialize in the init for Jerooga, the screen will be updated each time something on the board is changed, for instance moving a jeroo
         pygame.init()
         self.window = pygame.display.set_mode(self.screenSize)
-
+        
     def board_to_string(self):
         return [str(self.board[x][y]) for x in range(self.blocksWide) for y in range(self.blocksHigh)]
         
@@ -27,25 +27,13 @@ class Jerooga:
         # Draws tiles
         for y in self.board:
             for tile in y:
-                tile.draw(self.window)
+                tile.draw(self.window, self.pixelsPerBlock)
         
         # Draws Jeroos
         for jerooIter in self.jeroos:
-            jerooIter.draw(self.window)
-        pass
+            jerooIter.draw(self.window, self.pixelsPerBlock)
 
-
-
-
-
-
-
-   
-    
-
-
-
-
+        pygame.display.flip()
 
 
 
@@ -59,6 +47,9 @@ class Tile:
         self.blockY = blockY
         self.img = type2Texture[self.state]
 
+    def setState(self, state):
+        self.state = state
+
     # Returns pygame texture
     def getTexture(self):
         return type2Texture[self.state]
@@ -68,22 +59,26 @@ class Tile:
 
     getState = __str__
     
-    def draw(self, window):
-        window.blit(self.getTexture(), (self.blockX*, self.yPos))
+    def draw(self, window, pixelsPerBlock):
+        window.blit(self.getTexture(), (self.blockX*pixelsPerBlock, self.blockY*pixelsPerBlock))
     
     def getRect(self):
         rect = self.img.get_rect()
         return (self.x, self.y, rect[2], rect[3])
     
+
+
+
+
 class Jeroo(Tile):
-    def __init__(self, number, spawnPosition="Placeholder, correct later", flowers = 0):
+    def __init__(self, number, spawnPosition = (1, 1), flowers = 0):
         self.number = number
         self.flowers = flowers
-        self.spawnPosition = spawnPosition
+        self.blockX, self.blockY = spawnPosition
         self.direction = "E"
 
     def getTexture(self):
-        if self.board[self.blockY][self.blockX].getState() == "flower":
+        if self.isOnFlower():
             return type2Texture[f"{self.number}{self.direction}_F"]
         return type2Texture[f"{self.number}{self.direction}"]
             
@@ -117,6 +112,9 @@ class Jeroo(Tile):
     
     def isFacing(self, direction):
         return True if self.direction == direction else False
+    
+    def isOnFlower(self):
+        return self.board[self.blockY][self.blockX].getState() == "flower"
 
 
 
