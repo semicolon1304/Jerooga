@@ -13,9 +13,11 @@ class Jerooga:
         self.blocksHigh = screenHeight // self.pixelsPerBlock
 
         if file != "None":
+            lines = []
             f = open(file)
-            line = f.read()
-            state = # Determine state from string
+            for x in f: lines.append(f.readLine())
+            
+            state = "temp" # Determine state from string
             self.board = [[Tile(x,y, state=state) for x in range(self.blocksWide)]]
             f.close()
 
