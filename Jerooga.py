@@ -11,31 +11,29 @@ class Jerooga:
         self.screenSize = (screenWidth, screenHeight)
         self.blocksWide = screenWidth // self.pixelsPerBlock
         self.blocksHigh = screenHeight // self.pixelsPerBlock
+        # Board is the play area, it is a 2d list, screenWidth//pixelsPerBlock x screenHeight//pixelsPerBlock
+        self.board = [[Tile(x,y) for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
 
         if file != "None":
             lines = []
             f = open(file)
-            toPush = []
             for x in f: 
-                lines.append(f.readLine())
-            for line in lines:
-                for tile in line:
+                lines.append(f.readline().strip())
+            for y, line in enumerate(lines):
+                print(len(line))
+                for x, tile in enumerate(line):
                     if tile == ".": state = "land"
                     elif tile == "F": state = "flower"
                     elif tile == "N": state = "net"
                     else: state = "water"
-                    toPush.append(state)
+                    self.board[y][x].setState(state)
           
 
             state = "temp" # Determine state from string
-            self.board = [[Tile(x,y, state=state) for x in range(self.blocksWide)]]
             f.close()
 
             
             
-        # Board is the play area, it is a 2d list, screenWidth//pixelsPerBlock x screenHeight//pixelsPerBlock
-        #else:
-        self.board = [[Tile(x,y) for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
 
         # Jeroos should be stored in a list for easy iteration in loops
         self.jeroos = []
@@ -82,6 +80,9 @@ class Jerooga:
             
         pygame.quit()
         exit()
+
+    def getCurrentBlockState(self, x, y):
+        return self.board[y][x].getState
 
     
 
@@ -151,16 +152,15 @@ class Jeroo(Tile):
         
     # Picks up the flower on the current position and places it in inventory
     def pick(self):
-        self.parentJerooga.board[self.blockY][self.blockX] = "land"
-
-        self.flowers += 1
+        if self.parentJerooga.getCurrentBlockState(self.blockX, self.blockY) == "flower":
+            self.parentJerooga.board[self.blockY][self.blockX] = "land"
+            self.flowers += 1
         
 
 
     # Places flower at current position
     def plant(self):
         self.parentJerooga.board[self.blockY][self.blockX] = "flower"
-        
         self.flowers -= 1
     
 
