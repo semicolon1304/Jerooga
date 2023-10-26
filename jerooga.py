@@ -1,4 +1,5 @@
 import pygame
+from time import sleep
 
 class Jerooga:
     def __init__(self, screenWidth=644, screenHeight=644):
@@ -19,6 +20,11 @@ class Jerooga:
         # Pygame will initialize in the init for Jerooga, the screen will be updated each time something on the board is changed, for instance moving a jeroo
         pygame.init()
         self.window = pygame.display.set_mode(self.screenSize)
+
+    def addJeroo(self, spawnPosition, flowers=0, direction = "E"):
+        self.jeroos.append(Jeroo(self, len(self.jeroos), spawnPosition, flowers, direction))
+        self.updateWindow()
+        return self.jeroos[-1]
         
     def board_to_string(self):
         return [str(self.board[x][y]) for x in range(self.blocksWide) for y in range(self.blocksHigh)]
@@ -31,9 +37,11 @@ class Jerooga:
         
         # Draws Jeroos
         for jerooIter in self.jeroos:
-            jerooIter.draw(self.window, self.pixelsPerBlock)
+            jerooIter.draw(self.window, self.pixelsPerBlock, self.board)
 
         pygame.display.flip()
+
+        sleep(1)
 
 
 
@@ -71,31 +79,45 @@ class Tile:
 
 
 class Jeroo(Tile):
-    def __init__(self, number, spawnPosition = (1, 1), flowers = 0):
+    def __init__(self, parentJerooga, number, spawnPosition, flowers = 0, direction = "E"):
         self.number = number
         self.flowers = flowers
         self.blockX, self.blockY = spawnPosition
-        self.direction = "E"
+        self.direction = direction
+        self.parentJerooga = parentJerooga
+    
+    def draw(self, window, pixelsPerBlock, board):
+        window.blit(self.getTexture(board), (self.blockX*pixelsPerBlock, self.blockY*pixelsPerBlock))
 
-    def getTexture(self):
-        if self.isOnFlower():
+    def getTexture(self, board):
+        if self.isOnFlower(board):
             return type2Texture[f"{self.number}{self.direction}_F"]
         return type2Texture[f"{self.number}{self.direction}"]
             
-    
     # Action methods
-    def hop(numberOfSpaces=1):
-        pass
-        # Picks up the flower on the current position and places it in inventory
+    def hop(self, numberOfSpaces=1):
+        if self.direction == "N":
+            self.blockY -= numberOfSpaces
+        elif self.direction == "E":
+            self.blockX += numberOfSpaces
+        elif self.direction == "S":
+            self.blockY += 1
+        else:
+            self.blockX -= 1
+
+        self.parentJerooga.updateWindow()
+        
+    # Picks up the flower on the current position and places it in inventory
     def pick():
         pass
 
-        # Places flower at current position
+
+    # Places flower at current position
     def plant(self, window):
-        #= Tile("Flower")
         pass
     
-        # Places a flower one block in the direction that the jeroo is facing
+
+    # Places a flower one block in the direction that the jeroo is facing
     def toss():
         pass
     
@@ -113,8 +135,8 @@ class Jeroo(Tile):
     def isFacing(self, direction):
         return True if self.direction == direction else False
     
-    def isOnFlower(self):
-        return self.board[self.blockY][self.blockX].getState() == "flower"
+    def isOnFlower(self, board):
+        return board[self.blockY][self.blockX].getState() == "flower"
 
 
 
