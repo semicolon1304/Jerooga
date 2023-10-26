@@ -15,8 +15,18 @@ class Jerooga:
         if file != "None":
             lines = []
             f = open(file)
-            for x in f: lines.append(f.readLine())
-            
+            toPush = []
+            for x in f: 
+                lines.append(f.readLine())
+            for line in lines:
+                for tile in line:
+                    if tile == ".": state = "land"
+                    elif tile == "F": state = "flower"
+                    elif tile == "N": state = "net"
+                    else: state = "water"
+                    toPush.append(state)
+          
+
             state = "temp" # Determine state from string
             self.board = [[Tile(x,y, state=state) for x in range(self.blocksWide)]]
             f.close()
@@ -24,8 +34,8 @@ class Jerooga:
             
             
         # Board is the play area, it is a 2d list, screenWidth//pixelsPerBlock x screenHeight//pixelsPerBlock
-        else:
-            self.board = [[Tile(x,y) for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
+        #else:
+        self.board = [[Tile(x,y) for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
 
         # Jeroos should be stored in a list for easy iteration in loops
         self.jeroos = []
@@ -55,20 +65,24 @@ class Jerooga:
         pygame.display.flip()
         
         for event in pygame.event.get():
-            match event:
-
-                case pygame.QUIT:
-                    pygame.quit()
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
 
         sleep(self.secondsBetweenActions)
 
     def allDone(self):
         # loop that checks for events and closes window, esc key should work too
-        for event in pygame.event.get():
-            match event:
+        running = True
 
-                case pygame.QUIT:
-                    pygame.quit()
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            
+        pygame.quit()
+        exit()
+
     
 
 
@@ -137,7 +151,7 @@ class Jeroo(Tile):
         
     # Picks up the flower on the current position and places it in inventory
     def pick(self):
-        self.parentJerooga.board[self.blockY][self.blockX] == "land"
+        self.parentJerooga.board[self.blockY][self.blockX] = "land"
 
         self.flowers += 1
         
@@ -145,7 +159,7 @@ class Jeroo(Tile):
 
     # Places flower at current position
     def plant(self):
-        self.parentJerooga.board[self.blockY][self.blockX] == "flower"
+        self.parentJerooga.board[self.blockY][self.blockX] = "flower"
         
         self.flowers -= 1
     

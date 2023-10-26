@@ -7,9 +7,10 @@ for y in range(1,jerooga_obj.blocksHigh-1):
 
 
 bob = jerooga_obj.addJeroo((1,1))
-for i in range(10):
+for i in range(3):
     bob.hop()
 
 
 
-jerooga_obj.allDone()
+jerooga_obj.allDone() 
+
