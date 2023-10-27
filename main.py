@@ -16,9 +16,12 @@ jerooga_obj = Jerooga(file="all.jev")
 
 
 
-bob = jerooga_obj.addJeroo((1,1))
+bob = jerooga_obj.addJeroo((1,1), 1)
 for i in range(3):
     bob.hop()
+bob.turn('r')
+bob.hop(2)
+bob.toss()
 
 
 

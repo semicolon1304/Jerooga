@@ -2,7 +2,7 @@ import pygame
 from time import sleep
 
 class Jerooga:
-    def __init__(self, secondsBetweenActions = 1, file:str="None", screenWidth:int=644, screenHeight:int=644):
+    def __init__(self, secondsBetweenActions = 1, file:str="None", screenWidth:int=728, screenHeight:int=728):
         self.secondsBetweenActions = secondsBetweenActions
         self.pixelsPerBlock = 28
         # each block is self.pixelsPerBlock x self.pixelsPerBlock
@@ -14,26 +14,19 @@ class Jerooga:
         # Board is the play area, it is a 2d list, screenWidth//pixelsPerBlock x screenHeight//pixelsPerBlock
         self.board = [[Tile(x,y) for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
 
+        # Load board from file
         if file != "None":
-            lines = []
-            f = open(file)
-            for x in f: 
-                lines.append(f.readline().strip())
+            with open(file, 'r') as f:
+                lines = f.readlines()
+            lines = [line.rstrip('\n') for line in lines]
             for y, line in enumerate(lines):
-                print(len(line))
                 for x, tile in enumerate(line):
                     if tile == ".": state = "land"
                     elif tile == "F": state = "flower"
                     elif tile == "N": state = "net"
                     else: state = "water"
-                    self.board[y][x].setState(state)
-          
-
-            state = "temp" # Determine state from string
+                    self.board[y+1][x+1].setState(state)
             f.close()
-
-            
-            
 
         # Jeroos should be stored in a list for easy iteration in loops
         self.jeroos = []
@@ -81,10 +74,18 @@ class Jerooga:
         pygame.quit()
         exit()
 
-    def getCurrentBlockState(self, x, y):
-        return self.board[y][x].getState
+    def getState(self, x, y):
+        return self.board[y][x].getState()
+    
+    def setState(self, x, y, state):
+        self.board[y][x].setState(state)
 
     
+
+
+
+
+
 
 
 
@@ -121,6 +122,12 @@ class Tile:
 
 
 
+
+
+
+
+
+
 class Jeroo(Tile):
     def __init__(self, parentJerooga, number, spawnPosition, flowers = 0, direction = "E"):
         self.number = number
@@ -144,17 +151,19 @@ class Jeroo(Tile):
         elif self.direction == "E":
             self.blockX += numberOfSpaces
         elif self.direction == "S":
-            self.blockY += 1
+            self.blockY += numberOfSpaces
         else:
-            self.blockX -= 1
+            self.blockX -= numberOfSpaces
 
         self.parentJerooga.updateWindow()
         
     # Picks up the flower on the current position and places it in inventory
     def pick(self):
-        if self.parentJerooga.getCurrentBlockState(self.blockX, self.blockY) == "flower":
+        if self.parentJerooga.getState(self.blockX, self.blockY) == "flower":
             self.parentJerooga.board[self.blockY][self.blockX] = "land"
             self.flowers += 1
+
+        self.parentJerooga.updateWindow()
         
 
 
@@ -162,28 +171,64 @@ class Jeroo(Tile):
     def plant(self):
         self.parentJerooga.board[self.blockY][self.blockX] = "flower"
         self.flowers -= 1
+        
+        self.parentJerooga.updateWindow()
     
 
     # Places a flower one block in the direction that the jeroo is facing
-    def toss():
-        pass
-    
-    def give():
+    def toss(self):
+        if self.direction == "N":
+            potentialCoordinate = (self.blockY-1, self.blockX)
+        elif self.direction == "E":
+            potentialCoordinate = (self.blockY, self.blockX+1)
+        elif self.direction == "S":
+            potentialCoordinate = (self.blockY+1, self.blockX)
+        else:
+            potentialCoordinate = (self.blockY, self.blockX-1)
+        if self.parentJerooga.getState(*potentialCoordinate[::-1]) in ("flower","water"):
+            return
+        else:
+            self.parentJerooga.setState(*potentialCoordinate[::-1], "flower")
+        self.parentJerooga.updateWindow()
+        
+        
+    def give(self):
+        self.parentJerooga.updateWindow()
         pass
 
-    def turn(direction):
-        pass
+    def turn(self, relativeDirection):
+        relativeDirection = relativeDirection.lower()
+        if relativeDirection == "right" or relativeDirection == 'r':
+            self.direction = cardinalDirections[(cardinalDirections.index(self.direction) + 1) % 4]
+        elif relativeDirection == "left" or relativeDirection == 'l':
+            self.direction = cardinalDirections[(cardinalDirections.index(self.direction) + 1) % 4]
+        
+        self.parentJerooga.updateWindow()
 
-    # Boolean Methods (not by zack "BooleanMaster" McKenzie)
+    # Boolean Methods (partially by Xæch "BooleanMaster" McKenzie)
     
     def hasFlower(self):
-        return True if self.flowers > 0 else False
+        return self.flowers > 0
     
     def isFacing(self, direction):
-        return True if self.direction == direction else False
+        return self.direction == direction
     
     def isOnFlower(self):
-        return self.parentJerooga.board[self.blockY][self.blockX].getState() == "flower"
+        return self.parentJerooga.getState(self.blockX, self.blockY) == "flower"
+    
+    def isFlower(self):
+        if self.direction == "N":
+            self.parentJerooga.getState(self.blockX, self.blockY-1) == "flower"
+        elif self.direction == "E":
+            self.parentJerooga.getState(self.blockX+1, self.blockY) == "flower"
+        elif self.direction == "S":
+            self.parentJerooga.getState(self.blockX, self.blockY+1) == "flower"
+        else:
+            self.parentJerooga.getState(self.blockX-1, self.blockY) == "flower"
+  
+
+    
+    
 
 
 
@@ -205,3 +250,5 @@ type2Texture = {
     }
 # Makes the textures for the jeroos with various flowers and directions
 type2Texture.update({f"{n}{d}{f}": pygame.image.load(f"Textures/{n}{d}{f}.gif") for n in range(4) for d in "NESW" for f in ("","_F")})
+
+cardinalDirections = ['N','E','S','W']
