@@ -2,7 +2,7 @@ import pygame
 from time import sleep
 
 class Jerooga:
-    def __init__(self, secondsBetweenActions = 1, file:str="None", screenWidth:int=728, screenHeight:int=728):
+    def __init__(self, secondsBetweenActions = 1, file:str="defaultMap.jev", screenWidth:int=728, screenHeight:int=728):
         self.secondsBetweenActions = secondsBetweenActions
         self.pixelsPerBlock = 28
         # each block is self.pixelsPerBlock x self.pixelsPerBlock
@@ -169,7 +169,7 @@ class Jeroo(Tile):
 
     # Places flower at current position
     def plant(self):
-        self.parentJerooga.board[self.blockY][self.blockX] = "flower"
+        self.parentJerooga.setState(self.blockX, self.blockY, "flower")
         self.flowers -= 1
         
         self.parentJerooga.updateWindow()
