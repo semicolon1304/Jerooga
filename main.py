@@ -1,13 +1,11 @@
 from Jerooga import Jerooga
 
-jerooga_obj = Jerooga(.75)
+jerooga_obj = Jerooga(.75, "all.jev")
 
 bob = jerooga_obj.addJeroo((0,0), 1, "E")
-tom = jerooga_obj.addJeroo((0,1), 0, "N")
+bob.hop()
 
-bob.give("r")
-tom.give()
-print(bob.getFlowers())
+tom.hop(3)
 
 
 # for i in range(2):

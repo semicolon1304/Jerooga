@@ -87,6 +87,17 @@ class Jerooga:
             if jeroo.getBlock() == (x,y):
                 return jeroo
         return None
+    
+    def getJerooColl(self, x, y):
+        jeroosAtCoord = []
+        for jeroo in self.jeroos:
+            if jeroo.getBlock() == (x, y):
+                jeroosAtCoord.append(jeroo)
+        if len(jeroosAtCoord) > 0:
+            for jeroo in jeroosAtCoord:
+                jeroo.setState("collided")
+            return True
+        return False
 
     
 
@@ -145,13 +156,19 @@ class Jeroo(Tile):
         self.blockX, self.blockY = spawnPosition
         self.direction = direction
         self.parentJerooga = parentJerooga
-        self.state = "J"
+        self.state = "normal"
     
     def draw(self, window, pixelsPerBlock):
         window.blit(self.getTexture(), (self.blockX*pixelsPerBlock, self.blockY*pixelsPerBlock))
 
     def getTexture(self):
-        if self.isOnFlower():
+        if self.state == "net":
+            return type2Texture["trapped"]
+        elif self.state == "water":
+            return type2Texture["wet"]
+        elif self.state == "collided":
+            return type2Texture["collision"]
+        elif self.isOnFlower():
             return type2Texture[f"{self.number}{self.direction}_F"]
         return type2Texture[f"{self.number}{self.direction}"]
             
@@ -165,6 +182,18 @@ class Jeroo(Tile):
             self.blockY += numberOfSpaces
         else:
             self.blockX -= numberOfSpaces
+
+        # start of net collision    
+        blockAtCurrent = self.parentJerooga.getState(self.blockX, self.blockY)
+        if blockAtCurrent not in ("land", "flower"):
+            self.setState(blockAtCurrent)
+            self.parentJerooga.updateWindow()
+            self.parentJerooga.allDone()
+
+        if self.parentJerooga.getJerooColl(*self.getBlock()):
+            self.parentJerooga.updateWindow()
+            self.parentJerooga.allDone()
+
 
         self.parentJerooga.updateWindow()
 
@@ -203,7 +232,7 @@ class Jeroo(Tile):
     # Picks up the flower on the current position and places it in inventory
     def pick(self):
         if self.parentJerooga.getState(self.blockX, self.blockY) == "flower":
-            self.parentJerooga.board[self.blockY][self.blockX] = "land"
+            self.parentJerooga.setState(self.blockX, self.blockY, "land")
             self.flowers += 1
 
         self.parentJerooga.updateWindow()
@@ -212,26 +241,21 @@ class Jeroo(Tile):
 
     # Places flower at current position
     def plant(self):
-        self.parentJerooga.setState(self.blockX, self.blockY, "flower")
-        self.flowers -= 1
+        if self.flowers > 0 and self.parentJerooga.getState(self.blockX, self.blockY) != "flower":
+            self.parentJerooga.setState(self.blockX, self.blockY, "flower")
+            self.flowers -= 1
         
         self.parentJerooga.updateWindow()
     
 
     # Places a flower one block in the direction that the jeroo is facing
     def toss(self):
-        if self.direction == "N":
-            potentialCoordinate = (self.blockY-1, self.blockX)
-        elif self.direction == "E":
-            potentialCoordinate = (self.blockY, self.blockX+1)
-        elif self.direction == "S":
-            potentialCoordinate = (self.blockY+1, self.blockX)
-        else:
-            potentialCoordinate = (self.blockY, self.blockX-1)
-        if self.parentJerooga.getState(*potentialCoordinate[::-1]) in ("flower","water"):
-            return
-        else:
-            self.parentJerooga.setState(*potentialCoordinate[::-1], "flower")
+        if self.flowers > 0:
+            potentialCoordinate = self.getInRDirection("a")
+            if self.parentJerooga.getState(*potentialCoordinate) in ("flower","water"):
+                return
+            else:
+                self.parentJerooga.setState(*potentialCoordinate, "flower")
         self.parentJerooga.updateWindow()
         
         
