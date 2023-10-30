@@ -2,7 +2,7 @@ import pygame
 from time import sleep
 
 class Jerooga:
-    def __init__(self, secondsBetweenActions = 1, file:str="defaultMap.jev", screenWidth:int=728, screenHeight:int=728):
+    def __init__(self, secondsBetweenActions = 1.0, file:str="defaultMap.jev", screenWidth:int=728, screenHeight:int=728):
         self.secondsBetweenActions = secondsBetweenActions
         self.pixelsPerBlock = 28
         # each block is self.pixelsPerBlock x self.pixelsPerBlock
@@ -37,7 +37,7 @@ class Jerooga:
         self.window = pygame.display.set_mode(self.screenSize)
 
     def addJeroo(self, spawnPosition, flowers=0, direction = "E"):
-        self.jeroos.append(Jeroo(self, len(self.jeroos), spawnPosition, flowers, direction))
+        self.jeroos.append(Jeroo(self, len(self.jeroos), [i+1 for i in spawnPosition], flowers, direction))
         self.updateWindow()
         return self.jeroos[-1]
         
@@ -82,6 +82,12 @@ class Jerooga:
     def setState(self, x, y, state):
         self.board[y][x].setState(state)
 
+    def getJeroo(self, x, y):
+        for jeroo in self.jeroos:
+            if jeroo.getBlock() == (x,y):
+                return jeroo
+        return None
+
     
 
 
@@ -119,6 +125,9 @@ class Tile:
     def getRect(self):
         rect = self.img.get_rect()
         return (self.x, self.y, rect[2], rect[3])
+    
+    def getBlock(self):
+        return (self.blockX, self.blockY)
 
 
 
@@ -136,6 +145,7 @@ class Jeroo(Tile):
         self.blockX, self.blockY = spawnPosition
         self.direction = direction
         self.parentJerooga = parentJerooga
+        self.state = "J"
     
     def draw(self, window, pixelsPerBlock):
         window.blit(self.getTexture(), (self.blockX*pixelsPerBlock, self.blockY*pixelsPerBlock))
@@ -157,6 +167,38 @@ class Jeroo(Tile):
             self.blockX -= numberOfSpaces
 
         self.parentJerooga.updateWindow()
+
+    def getFlowers(self):
+        return self.flowers
+    
+    def getInRDirection(self, relativeDirection):
+        relativeDirection = relativeDirection.lower()
+        if relativeDirection in ("h", "here"):
+            return (self.blockX, self.blockY)
+        elif relativeDirection in ("a", "ahead"):
+            if self.direction == "N":
+                potentialCoordinate = (self.blockX, self.blockY-1)
+            elif self.direction == "E":
+                potentialCoordinate = (self.blockX+1, self.blockY)
+            elif self.direction == "S":
+                potentialCoordinate = (self.blockX, self.blockY+1)
+            else:
+                potentialCoordinate = (self.blockX-1, self.blockY)
+            return potentialCoordinate
+        elif relativeDirection in ("l", "left"):
+            if self.direction in ("N, S"):
+                return (self.blockX+(-1 if self.direction == "N" else 1), self.blockY)
+            else:
+                return (self.blockX, self.blockY+(-1 if self.direction == "E" else 1))
+        else:
+            if self.direction in ("N, S"):
+                return (self.blockX+(1 if self.direction == "N" else -1), self.blockY)
+            else:
+                return (self.blockX, self.blockY+(1 if self.direction == "E" else -1))
+        
+            
+    def giveFlowers(self, number=1):
+        self.flowers += number
         
     # Picks up the flower on the current position and places it in inventory
     def pick(self):
@@ -193,9 +235,14 @@ class Jeroo(Tile):
         self.parentJerooga.updateWindow()
         
         
-    def give(self):
+    def give(self, relativeDirection = "ahead"):
+        if self.flowers > 0:
+            otherJeroo = self.parentJerooga.getJeroo(*self.getInRDirection(relativeDirection))
+            if otherJeroo != None:
+                otherJeroo.giveFlowers()
+                self.flowers -= 1
+            
         self.parentJerooga.updateWindow()
-        pass
 
     def turn(self, relativeDirection):
         relativeDirection = relativeDirection.lower()
