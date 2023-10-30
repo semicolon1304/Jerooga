@@ -13,6 +13,7 @@ class Jerooga:
         self.blocksHigh = screenHeight // self.pixelsPerBlock
         # Board is the play area, it is a 2d list, screenWidth//pixelsPerBlock x screenHeight//pixelsPerBlock
         self.board = [[Tile(x,y) for x in range(self.blocksWide)] for y in range(self.blocksHigh)]
+        self.drowned = False
 
         # Load board from file
         if file != "None":
@@ -59,7 +60,8 @@ class Jerooga:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
+        if self.drowned:
+            pygame.quit()
         sleep(self.secondsBetweenActions)
 
     def allDone(self):
@@ -117,7 +119,6 @@ class Tile:
     def getRect(self):
         rect = self.img.get_rect()
         return (self.x, self.y, rect[2], rect[3])
-    
 
 
 
@@ -225,7 +226,12 @@ class Jeroo(Tile):
             self.parentJerooga.getState(self.blockX, self.blockY+1) == "flower"
         else:
             self.parentJerooga.getState(self.blockX-1, self.blockY) == "flower"
-  
+    
+    def isJerooDrowned(self):
+        if self.parentJerooga.getState(self.blockX, self.blockY) == "water":
+            print("Working")
+    
+    
 
     
     
