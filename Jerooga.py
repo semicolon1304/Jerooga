@@ -93,7 +93,7 @@ class Jerooga:
         for jeroo in self.jeroos:
             if jeroo.getBlock() == (x, y):
                 jeroosAtCoord.append(jeroo)
-        if len(jeroosAtCoord) > 0:
+        if len(jeroosAtCoord) > 1:
             for jeroo in jeroosAtCoord:
                 jeroo.setState("collided")
             return True
@@ -241,7 +241,7 @@ class Jeroo(Tile):
 
     # Places flower at current position
     def plant(self):
-        if self.flowers > 0 and self.parentJerooga.getState(self.blockX, self.blockY) != "flower":
+        if self.hasFlower() and self.parentJerooga.getState(self.blockX, self.blockY) != "flower":
             self.parentJerooga.setState(self.blockX, self.blockY, "flower")
             self.flowers -= 1
         
@@ -250,7 +250,7 @@ class Jeroo(Tile):
 
     # Places a flower one block in the direction that the jeroo is facing
     def toss(self):
-        if self.flowers > 0:
+        if self.hasFlower():
             potentialCoordinate = self.getInRDirection("a")
             if self.parentJerooga.getState(*potentialCoordinate) in ("flower","water"):
                 return
@@ -259,8 +259,8 @@ class Jeroo(Tile):
         self.parentJerooga.updateWindow()
         
         
-    def give(self, relativeDirection = "ahead"):
-        if self.flowers > 0:
+    def give(self, relativeDirection = "Ahead"):
+        if self.hasFlower():
             otherJeroo = self.parentJerooga.getJeroo(*self.getInRDirection(relativeDirection))
             if otherJeroo != None:
                 otherJeroo.giveFlowers()
@@ -288,23 +288,26 @@ class Jeroo(Tile):
     def isOnFlower(self):
         return self.parentJerooga.getState(self.blockX, self.blockY) == "flower"
     
-    def isFlower(self):
-        if self.direction == "N":
-            self.parentJerooga.getState(self.blockX, self.blockY-1) == "flower"
-        elif self.direction == "E":
-            self.parentJerooga.getState(self.blockX+1, self.blockY) == "flower"
-        elif self.direction == "S":
-            self.parentJerooga.getState(self.blockX, self.blockY+1) == "flower"
-        else:
-            self.parentJerooga.getState(self.blockX-1, self.blockY) == "flower"
-    
-    def isJerooDrowned(self):
-        if self.parentJerooga.getState(self.blockX, self.blockY) == "water":
-            print("Working")
-    
-    
+    def isFlower(self, relativeDirection = "Here"):
+        return self.parentJerooga.getState(*self.getInRDirection(relativeDirection)) == "flower"
 
+    def isJeroo(self, relativeDirection):
+        return self.parentJerooga.getJeroo(*self.getInRDirection(relativeDirection)) != None
     
+    def isNet(self, relativeDirection):
+        return self.parentJerooga.getState(*self.getInRDirection(relativeDirection)) == "net"
+    
+    def isWater(self, relativeDirection):
+        return self.parentJerooga.getState(*self.getInRDirection(relativeDirection)) == "water"
+
+    def isClear(self, relativeDirection):
+        conditions = []
+        conditions.append(self.isFlower(relativeDirection))
+        conditions.append(self.isNet(relativeDirection))
+        conditions.append(self.isWater(relativeDirection))
+        conditions.append(self.isJeroo(relativeDirection))
+
+        return not any(conditions)
     
 
 
