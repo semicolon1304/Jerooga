@@ -68,13 +68,14 @@ class Jerooga:
 
     def allDone(self):
         # loop that checks for events and closes window, esc key should work too, should be run at end of program, or collosion
+        print("All Done!")
+        
         running = True
-
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            
+        
         pygame.quit()
         exit()
 
@@ -294,7 +295,7 @@ class Jeroo(Tile):
         if relativeDirection == "right" or relativeDirection == 'r':
             self.direction = cardinalDirections[(cardinalDirections.index(self.direction) + 1) % 4]
         elif relativeDirection == "left" or relativeDirection == 'l':
-            self.direction = cardinalDirections[(cardinalDirections.index(self.direction) + 1) % 4]
+            self.direction = cardinalDirections[(cardinalDirections.index(self.direction) + -1) % 4]
         
         self.parentJerooga.updateWindow()
 

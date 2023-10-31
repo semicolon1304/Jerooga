@@ -1,16 +1,19 @@
 from Jerooga import Jerooga
 
-jerooga_obj = Jerooga(.75, "all.jev")
+jerooga_obj = Jerooga(.10, "maze2.jev")
 
-bob = jerooga_obj.addJeroo((0,0), 1, "E")
-bob.hop()
+bob = jerooga_obj.addJeroo((0,0))
+bob.turn("right")
 
-
-# for i in range(2):
-#     bob.hop(2)
-#     bob.turn('l')
-
-# bob.hop(1)
-# bob.toss()
+while not bob.isFlower():
+    if bob.isClear("ahead") or bob.isFlower("ahead"):
+        bob.hop()
+    elif bob.isClear("left"):
+        bob.turn("left")
+    elif bob.isClear("right"):
+        bob.turn("right")
+    else:
+        bob.turn("right")
+        bob.turn("right")
 
 jerooga_obj.allDone() 
