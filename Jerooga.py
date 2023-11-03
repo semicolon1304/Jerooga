@@ -2,7 +2,7 @@ import pygame
 from time import sleep
 
 class Jerooga:
-    def __init__(self, secondsBetweenActions = 1.0, file:str="defaultMap.jev", screenWidth:int=728, screenHeight:int=728):
+    def __init__(self, secondsBetweenActions : float = 1.0, file : str = "defaultMap.jev", screenWidth : int = 728, screenHeight : int = 728) -> None:
         self.secondsBetweenActions = secondsBetweenActions
         self.pixelsPerBlock = 28
         # each block is self.pixelsPerBlock x self.pixelsPerBlock
@@ -36,10 +36,13 @@ class Jerooga:
         self.window = pygame.display.set_mode(self.screenSize)
 
     # adds a jeroo to jeroos list
-    def addJeroo(self, spawnPosition, flowers=0, direction = "E"):
+    def addJeroo(self, spawnPosition : tuple[int, int], flowers : int = 0, direction : str = "E") -> Jeroo:
         # spawn position is incremented by 1 on both axes, this is to be more consistent with real jeroo
         self.jeroos.append(Jeroo(self, len(self.jeroos), [i+1 for i in spawnPosition], flowers, direction))
         self.updateWindow()
+
+        # checks for collisions in newly created jeroos
+        self.jeroos[-1].checkColl()
         # returns the newly created jeroo, this is so the user can intereact with it without jerooga class
         return self.jeroos[-1]
         
@@ -182,6 +185,20 @@ class Jeroo(Tile):
         elif self.isFlower():
             return type2Texture[f"{self.number}{self.direction}_F"]
         return type2Texture[f"{self.number}{self.direction}"]
+    
+    def checkColl(self):
+        # net and water collision detection
+        blockAtCurrent = self.parentJerooga.getState(self.blockX, self.blockY)
+        if blockAtCurrent not in ("land", "flower"):
+            self.setState(blockAtCurrent)
+            self.parentJerooga.updateWindow()
+            self.parentJerooga.allDone()
+
+        # jeroo collision detection
+        if self.parentJerooga.getJerooColl(*self.getBlock()):
+            print("jeroo coll")
+            self.parentJerooga.updateWindow()
+            self.parentJerooga.allDone()
             
     # Action methods
 
@@ -196,17 +213,7 @@ class Jeroo(Tile):
         else:
             self.blockX -= numberOfSpaces
 
-        # net and water collision detection
-        blockAtCurrent = self.parentJerooga.getState(self.blockX, self.blockY)
-        if blockAtCurrent not in ("land", "flower"):
-            self.setState(blockAtCurrent)
-            self.parentJerooga.updateWindow()
-            self.parentJerooga.allDone()
-
-        # jeroo collision detection
-        if self.parentJerooga.getJerooColl(*self.getBlock()):
-            self.parentJerooga.updateWindow()
-            self.parentJerooga.allDone()
+        self.checkColl()
 
 
         self.parentJerooga.updateWindow()
