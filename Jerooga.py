@@ -1,6 +1,39 @@
 import pygame
 from time import sleep
 
+# Tile class to be stored in the board 2d list, it should represent each type of block
+class Tile:
+    def __init__(self, blockX, blockY, state = "water"):
+        self.state = state
+        self.blockX = blockX
+        self.blockY = blockY
+
+    def setState(self, state):
+        self.state = state
+
+    # Returns pygame texture
+    def getTexture(self):
+        return type2Texture[self.state]
+
+    def __str__(self):
+        return self.state
+
+    # tile getState just returns string, so same as __str__
+    getState = __str__
+    
+    def draw(self, window, pixelsPerBlock):
+        window.blit(self.getTexture(), (self.blockX*pixelsPerBlock, self.blockY*pixelsPerBlock))
+    
+    def getRect(self):
+        rect = self.getTexture().get_rect()
+        return (self.x, self.y, rect[2], rect[3])
+    
+    # gets coord in block form
+    def getBlock(self):
+        return (self.blockX, self.blockY)
+
+
+
 class Jerooga:
     def __init__(self, secondsBetweenActions : float = 1.0, file : str = "defaultMap.jev", screenWidth : int = 728, screenHeight : int = 728) -> None:
         self.secondsBetweenActions = secondsBetweenActions
@@ -36,7 +69,7 @@ class Jerooga:
         self.window = pygame.display.set_mode(self.screenSize)
 
     # adds a jeroo to jeroos list
-    def addJeroo(self, spawnPosition : tuple[int, int], flowers : int = 0, direction : str = "E") -> Jeroo:
+    def addJeroo(self, spawnPosition : tuple[int, int], flowers : int = 0, direction : str = "E"):
         # spawn position is incremented by 1 on both axes, this is to be more consistent with real jeroo
         self.jeroos.append(Jeroo(self, len(self.jeroos), [i+1 for i in spawnPosition], flowers, direction))
         self.updateWindow()
@@ -111,55 +144,6 @@ class Jerooga:
         return False
 
     
-
-
-
-
-
-
-
-
-
-
-# Tile class to be stored in the board 2d list, it should represent each type of block
-class Tile:
-    def __init__(self, blockX, blockY, state = "water"):
-        self.state = state
-        self.blockX = blockX
-        self.blockY = blockY
-
-    def setState(self, state):
-        self.state = state
-
-    # Returns pygame texture
-    def getTexture(self):
-        return type2Texture[self.state]
-
-    def __str__(self):
-        return self.state
-
-    # tile getState just returns string, so same as __str__
-    getState = __str__
-    
-    def draw(self, window, pixelsPerBlock):
-        window.blit(self.getTexture(), (self.blockX*pixelsPerBlock, self.blockY*pixelsPerBlock))
-    
-    def getRect(self):
-        rect = self.getTexture().get_rect()
-        return (self.x, self.y, rect[2], rect[3])
-    
-    # gets coord in block form
-    def getBlock(self):
-        return (self.blockX, self.blockY)
-
-
-
-
-
-
-
-
-
 
 class Jeroo(Tile):
     def __init__(self, parentJerooga, number, spawnPosition, flowers = 0, direction = "E"):
